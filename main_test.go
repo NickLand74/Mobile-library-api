@@ -66,18 +66,29 @@ func TestGetSongText(t *testing.T) {
 	r := setupRouter()
 	req, _ := http.NewRequest(http.MethodGet, "/songs/1/text?page=1&limit=2", nil)
 	w := httptest.NewRecorder()
+
+	log.Println("Sending request to get song text")
 	r.ServeHTTP(w, req)
 
 	// Assertions
+	if w.Code == http.StatusNotFound {
+		t.Log("Song not found, expected status 200; got 404")
+		t.Error("Expected status 200; got 404")
+		return
+	}
+
 	if w.Code != http.StatusOK {
-		t.Errorf("Expected status %d; got %d", http.StatusOK, w.Code)
+		t.Fatalf("Expected status %d; got %d", http.StatusOK, w.Code)
 	}
 
 	var verses []string
 	err := json.Unmarshal(w.Body.Bytes(), &verses)
 	if err != nil {
-		t.Errorf("Failed to unmarshal response: %v", err)
+		t.Fatalf("Failed to unmarshal response: %v", err)
 	}
+
+	// Дополнительные проверки на содержание verses
+	t.Logf("Verses retrieved: %v", verses)
 }
 
 func TestUpdateSong(t *testing.T) {

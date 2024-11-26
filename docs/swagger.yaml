@@ -1,0 +1,238 @@
+basePath: /
+definitions:
+  main.ErrorResponse:
+    description: Структура для представления ошибок в API
+    properties:
+      error:
+        type: string
+    type: object
+  main.NullString:
+    description: NullString is a string that can be null
+    properties:
+      string:
+        type: string
+      valid:
+        description: Valid если не пустое
+        type: boolean
+    type: object
+  main.Song:
+    description: Структура для представления информации о песне
+    properties:
+      artist:
+        description: |-
+          Исполнитель песни
+          @example "Artist Name"
+        type: string
+      groupName:
+        allOf:
+        - $ref: '#/definitions/main.NullString'
+        description: |-
+          Название группы (может быть null)
+          @example "Group Name"
+      id:
+        description: |-
+          ID песни
+          @example 1
+        type: integer
+      link:
+        description: |-
+          Ссылка на песню
+          @example "https://example.com/song-link"
+        type: string
+      releaseDate:
+        description: |-
+          Дата выпуска песни
+          @example "2023-11-26"
+        type: string
+      text:
+        description: |-
+          Текст песни
+          @example "This is the text of the song."
+        type: string
+      title:
+        description: |-
+          Название песни
+          @example "Song Title"
+        type: string
+    required:
+    - artist
+    - link
+    - releaseDate
+    - text
+    - title
+    type: object
+  main.SuccessResponse:
+    description: Структура для успешного ответа в API
+    properties:
+      message:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a simple music management API.
+  title: Music API
+  version: "1.0"
+paths:
+  /songs:
+    get:
+      description: Retrieve a list of songs with pagination
+      parameters:
+      - default: 10
+        description: Limit the number of songs
+        in: query
+        name: limit
+        type: integer
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Song'
+            type: array
+        "400":
+          description: Ошибка в запросе
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Get Songs
+    post:
+      consumes:
+      - application/json
+      description: Создает новую песню в базе данных
+      parameters:
+      - description: Данные для новой песни
+        in: body
+        name: song
+        required: true
+        schema:
+          $ref: '#/definitions/main.Song'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Успешный ответ с созданной песней
+          schema:
+            $ref: '#/definitions/main.Song'
+        "400":
+          description: Ошибка в запросе
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Создать новую песню
+  /songs/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаляет песню по ID
+      parameters:
+      - description: ID песни
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            $ref: '#/definitions/main.SuccessResponse'
+        "404":
+          description: Песня не найдена
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Удалить песню
+    put:
+      consumes:
+      - application/json
+      description: Обновляет данные песни по ID
+      parameters:
+      - description: ID песни
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Данные для обновления песни
+        in: body
+        name: song
+        required: true
+        schema:
+          $ref: '#/definitions/main.Song'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            $ref: '#/definitions/main.SuccessResponse'
+        "400":
+          description: Ошибка в запросе
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "404":
+          description: Песня не найдена
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "500":
+          description: Внутренняя ошибка сервера
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Обновить информацию о песне
+  /songs/{id}/text:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает текст песни по ID с поддержкой пагинации
+      parameters:
+      - description: ID песни
+        in: path
+        name: id
+        required: true
+        type: string
+      - default: 1
+        description: Номер страницы
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Количество куплетов на странице
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Успешный ответ
+          schema:
+            items:
+              type: string
+            type: array
+        "400":
+          description: Ошибка в запросе
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+        "404":
+          description: Песня не найдена
+          schema:
+            $ref: '#/definitions/main.ErrorResponse'
+      summary: Получить текст песни
+swagger: "2.0"
